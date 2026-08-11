@@ -1,5 +1,13 @@
 # Metadata Mirage
 
+> ## ⚠️ THIS REPOSITORY IS INTENTIONALLY VULNERABLE
+> It exists for security education and stands up a deliberately insecure AWS
+> environment that is **designed to be attacked**. Deploy it **only** in an
+> isolated, throwaway AWS account with nothing you care about, restrict access
+> to your own `/32`, and tear it down (`make destroy`) when you are done. Do
+> **not** deploy it in a shared, production, or real account. See
+> [`NOTICE.md`](./NOTICE.md) before deploying.
+
 A reproducible AWS lab that chains a web-app **SSRF** into **instance
 credential theft** and then into **full administrator** via a single IAM
 privilege-escalation primitive — and shows the one-line fix that kills the
