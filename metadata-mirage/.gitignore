@@ -1,0 +1,8 @@
+# Terraform state & cache
+terraform/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Local scratch
+mirage-admin.json
