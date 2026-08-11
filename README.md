@@ -54,7 +54,7 @@ metadata-mirage/
 ```bash
 # 1. edit terraform/variables.tf: set allowed_cidr to YOUR_IP/32
 make deploy      # stand up the vulnerable lab (IMDSv1 allowed)
-make attack      # SSRF -> creds -> pivot -> enumerate -> privesc-to-admin
+make attack      # SSRF -> creds -> pivot -> blind privesc-to-admin
 make harden      # flip to IMDSv2-required, in place
 make attack      # same attack, now dead at the credential-theft step
 make destroy     # tear it all down
@@ -69,8 +69,11 @@ make clean       # remove local terraform state (after destroy)
    temporary `AccessKeyId` / `SecretAccessKey` / `Token`.
 3. **Pivot.** Export the stolen creds; `sts get-caller-identity` confirms you
    are now the instance role.
-4. **Enumerate.** List the role's attached policies and read the default
-   version — revealing the `CreatePolicyVersion` grant on its own policy.
+4. **Enumeration denied.** Acting as the role, the attacker tries to read its
+   own attached policy (`iam:ListAttachedRolePolicies` / `iam:GetPolicy`) and is
+   **denied** — the role is scoped so tightly it cannot even see its own
+   permissions. It does not matter: the next step writes a new policy version
+   without ever reading the old one, so the escalation goes ahead blind.
 5. **Boundary check.** `iam list-users` is denied — not admin yet.
 6. **Privesc.** `create-policy-version` rewrites the attached policy to `*:*`
    and sets it default.

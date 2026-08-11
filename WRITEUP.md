@@ -35,13 +35,18 @@ in return — a bare `GET` is enough — so a basic SSRF is sufficient. Exportin
 those three values and calling `sts get-caller-identity` confirms the pivot:
 requests now run as the instance role.
 
-## 4. Enumeration: the role that looks scoped
+## 4. Blind escalation: the role that cannot even read itself
 
-Listing the role's attached policies and reading the default version surfaces
-the trap. The S3 and CloudWatch grants are noise. The line that matters is
-`iam:CreatePolicyVersion` on the policy's own ARN. A boundary check —
-`iam list-users` — is denied, which is worth recording: at this point the role
-is genuinely not an administrator.
+Acting as the instance role, the natural next move is to read the attached
+policy and see what it grants. That fails: both `iam:ListAttachedRolePolicies`
+and `iam:GetPolicy` return `AccessDenied`. The role is scoped so tightly it
+cannot even enumerate its own permissions. This is not a blocker. Writing a new
+policy version does not require reading the existing one, so the escalation goes
+ahead blind — the attacker overwrites a policy they were never allowed to read.
+A separate boundary check — `iam list-users` — is also denied, which is worth
+recording: at this point the role is genuinely not an administrator. The lesson
+is sharper for the denial: a role that cannot even read its own permissions is
+still one write away from admin.
 
 ## 5. Privilege escalation to administrator
 
@@ -92,7 +97,7 @@ exotic vulnerability — it is the boundary nobody scoped.
 
 ```
 make deploy      # vulnerable
-make attack      # SSRF -> creds -> pivot -> enumerate -> admin
+make attack      # SSRF -> creds -> pivot -> blind privesc -> admin
 make harden      # IMDSv2 required, in place
 make attack      # dead at credential theft
 make destroy
