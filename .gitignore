@@ -7,4 +7,3 @@ crash.log
 # Local scratch
 mirage-admin.json
 *.tfvars
-*.tfvars
